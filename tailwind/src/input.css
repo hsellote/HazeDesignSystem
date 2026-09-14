@@ -1,0 +1,325 @@
+/* ============================================================
+   Haze Design System — Tailwind v4 entry point.
+
+   In v4 the CSS *is* the config: there is no tailwind.config.js.
+   Colour tokens are generated (see tools/build-palette.py); everything
+   else is authored here.
+   ============================================================ */
+
+@import "tailwindcss";
+
+/* Raw values (:root / .dark) then the @theme inline mapping. Order matters:
+   the vars must exist before @theme references them. */
+@import "../tokens.generated.css";
+@import "../theme.generated.css";
+
+/* v4 replacement for `darkMode: 'class'`. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ============================================================
+   THEME — everything that is not colour
+   ============================================================ */
+
+@theme {
+  /* ---- families ----
+     Two, matching the portfolio. Poppins carries everything read as prose,
+     JetBrains Mono everything read as data. Heading vs body is a weight
+     difference, not a family difference — which is what stops a two-font
+     system reading as flat. `font-script` is kept as an alias onto mono so
+     the aside voice still has a name of its own. */
+  --font-sans: 'Poppins', system-ui, -apple-system, sans-serif;
+  --font-display: 'Poppins', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-script: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* ---- type scale ----
+     Each step ships its own leading and tracking, so `text-body` is a
+     finished typographic decision rather than just a size. */
+  --text-2xs: 0.6875rem;            /* 11px */
+  --text-2xs--line-height: 1rem;
+  --text-2xs--letter-spacing: 0.08em;
+
+  --text-xs: 0.75rem;               /* 12 */
+  --text-xs--line-height: 1.125rem;
+  --text-xs--letter-spacing: 0.04em;
+
+  --text-sm: 0.8125rem;             /* 13 */
+  --text-sm--line-height: 1.25rem;
+
+  --text-base: 0.875rem;            /* 14 */
+  --text-base--line-height: 1.5rem;
+
+  --text-body: 0.9375rem;           /* 15 */
+  --text-body--line-height: 1.625rem;
+
+  --text-lg: 1.0625rem;             /* 17 */
+  --text-lg--line-height: 1.625rem;
+
+  --text-xl: 1.25rem;               /* 20 */
+  --text-xl--line-height: 1.75rem;
+  --text-xl--letter-spacing: -0.01em;
+
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 2rem;
+  --text-2xl--letter-spacing: -0.015em;
+
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 2.25rem;
+  --text-3xl--letter-spacing: -0.02em;
+
+  --text-4xl: 2.375rem;
+  --text-4xl--line-height: 2.625rem;
+  --text-4xl--letter-spacing: -0.022em;
+
+  --text-display: clamp(2rem, 4vw, 3.25rem);
+  --text-display--line-height: 1.08;
+  --text-display--letter-spacing: -0.025em;
+
+  --text-label: 0.6875rem;
+  --text-label--line-height: 1rem;
+  --text-label--letter-spacing: 0.12em;
+
+  /* ---- layout rhythm ----
+     Tailwind's numeric 4px scale stays; these are the named steps that
+     carry layout meaning so gutters stay consistent across pages. */
+  --spacing-gutter: 1.5rem;         /* 24px — grid gutter / card padding */
+  --spacing-gutter-sm: 1rem;        /* 16 — dense grids, mobile */
+  --spacing-gutter-lg: 2rem;        /* 32 — page gutters at lg+ */
+  --spacing-section: 4rem;          /* 64 — between page sections */
+  --spacing-section-lg: 6rem;       /* 96 */
+  --spacing-field: 0.625rem;        /* 10 — inside inputs and buttons */
+
+  /* ---- radius ---- */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.6875rem;
+  --radius-xl: 0.875rem;
+  --radius-2xl: 1rem;               /* cards */
+  --radius-3xl: 1.25rem;
+
+  /* ---- elevation ---- */
+  --shadow-xs: 0 1px 2px rgb(var(--shadow-rgb) / 0.06);
+  --shadow-sm: 0 1px 3px rgb(var(--shadow-rgb) / 0.08), 0 1px 2px rgb(var(--shadow-rgb) / 0.04);
+  --shadow-md: 0 4px 12px rgb(var(--shadow-rgb) / 0.10);
+  --shadow-lg: 0 12px 32px rgb(var(--shadow-rgb) / 0.14);
+  --shadow-panel: -24px 0 60px rgb(var(--shadow-rgb) / 0.16);
+  --shadow-modal: 0 30px 70px rgb(var(--shadow-rgb) / 0.24);
+
+  /* ---- motion ---- */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  --animate-pulse-dot: pulseDot 2.2s ease-in-out infinite;
+  --animate-slide-in: slideIn 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-pop-in: popIn 150ms ease-out;
+  --animate-indeterminate: indeterminate 1.4s ease-in-out infinite;
+
+  /* ---- widths ---- */
+  --container-prose: 68ch;
+  --container-container: 80rem;
+
+  @keyframes pulseDot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.35; transform: scale(0.8); }
+  }
+  @keyframes slideIn {
+    from { transform: translateX(24px); opacity: 0; }
+    to   { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes popIn {
+    from { transform: translateY(8px) scale(0.98); opacity: 0; }
+    to   { transform: translateY(0) scale(1); opacity: 1; }
+  }
+  @keyframes indeterminate {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(400%); }
+  }
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+
+@layer base {
+  :root {
+    --shadow-rgb: 28 32 25;          /* neutral-950, for tinted shadows */
+    color-scheme: light;
+  }
+  .dark {
+    --shadow-rgb: 0 0 0;
+    color-scheme: dark;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-bg text-content font-sans text-base;
+  }
+
+  /* v4 changed the default border colour to currentColor. Restore an explicit
+     default so a `border` with no colour class cannot silently inherit text
+     colour — components should still name their colour. */
+  *, ::after, ::before {
+    border-color: var(--color-edge, currentColor);
+  }
+
+  /* v4 preflight sets buttons to cursor:default. Put the pointer back. */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  /* One focus treatment for the whole system. Keyboard users get a visible
+     ring; pointer users don't, because :focus-visible excludes mouse focus.
+     v4 renamed outline-none -> outline-hidden. */
+  :focus-visible {
+    @apply outline-hidden ring-2 ring-accent-border ring-offset-2 ring-offset-bg rounded-sm;
+  }
+
+  ::selection {
+    @apply bg-accent-border/30;
+  }
+
+  /* Respect reduced-motion globally rather than per component. */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* ============================================================
+   COMPONENT SHORTHANDS
+
+   The canonical API of this system is Tailwind utilities — every component's
+   Code tab shows the full utility markup. These exist for the handful of
+   patterns that repeat on nearly every page, so you are not re-typing a
+   14-class button. Both spellings render identically.
+   ============================================================ */
+
+@layer components {
+
+  /* ---- button ---- */
+  .hz-btn {
+    @apply inline-flex items-center justify-center whitespace-nowrap font-medium
+           transition-colors duration-150
+           disabled:pointer-events-none disabled:opacity-50;
+  }
+  /* Size scale. These values are deliberate and measured, not derived from a
+     grid — read the notes below before changing any of them.
+
+     Note the radius SCALES with the size (7/8/9/11) rather than sitting flat —
+     a 48px button with a 7px corner reads sharper than the 28px one, so the
+     corner has to grow with the box to look like the same shape.
+
+     Several steps are not on Tailwind's 4px grid (34px, 13px, 12.5px, 15.5px),
+     so they use arbitrary values. That is faithful to the portfolio; do not
+     "tidy" them onto the grid without changing the portfolio first.
+
+     28px is the floor: WCAG 2.5.8 wants a 24px minimum target, and 24 would sit
+     exactly on the line with no margin for a tight line-box. */
+  .hz-btn-xs { @apply h-7        gap-1.5    px-2.5     text-2xs      rounded-[7px]; }
+  .hz-btn-s  { @apply h-[34px]   gap-[7px]  px-[13px]  text-[12.5px] rounded-md;    }
+  .hz-btn-m  { @apply h-10       gap-2      px-4       text-base     rounded-[9px]; }
+  .hz-btn-l  { @apply h-12       gap-[9px]  px-[22px]  text-[15.5px] rounded-lg;    }
+
+  .hz-btn-primary   { @apply bg-accent text-accent-fg hover:bg-accent-hover; }
+  .hz-btn-secondary { @apply border border-edge-strong bg-surface text-content hover:bg-surface-sunken; }
+  .hz-btn-ghost     { @apply text-content hover:bg-surface-sunken; }
+  .hz-btn-danger    { @apply bg-state-danger text-state-danger-fg hover:opacity-90; }
+
+  /* ---- floating action button ----
+     Circular, icon-only, elevated. Shares the button size scale so a FAB lines
+     up with the buttons beside it, and reuses the .hz-btn-* variants for fill —
+     a FAB is a button in a different shape, not a different colour system.
+     Icon-only means it MUST carry an aria-label; there is no visible text to
+     fall back on. The Button Sizes story asserts that. */
+  /* A FAB is its own scale, not the button scale — it floats above content and
+     has to stay reachable with a thumb. 56px default / 40px mini matches the
+     portfolio and the usual platform guidance. */
+  .hz-fab {
+    @apply inline-flex h-14 w-14 shrink-0 items-center justify-center
+           rounded-full text-[22px] shadow-md transition-colors duration-150
+           disabled:pointer-events-none disabled:opacity-50;
+  }
+  .hz-fab-mini { @apply h-10 w-10 text-[17px]; }
+
+  /* Extended FAB — icon plus label, still pill-shaped and elevated. */
+  .hz-fab-extended {
+    @apply inline-flex h-14 w-auto shrink-0 items-center gap-[9px]
+           rounded-[28px] px-[22px] text-[15px] font-medium
+           shadow-md transition-colors duration-150
+           disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  /* ---- surfaces ---- */
+  .hz-card {
+    @apply rounded-2xl border border-edge bg-surface p-gutter;
+  }
+
+  /* ---- form controls ---- */
+  .hz-input {
+    @apply w-full rounded-lg border border-edge-strong bg-surface
+           px-3 py-field text-sm text-content
+           placeholder:text-content-muted
+           focus:border-accent-border focus:outline-hidden focus:ring-2 focus:ring-accent-border/40
+           disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .hz-input-invalid {
+    @apply border-state-danger focus:border-state-danger focus:ring-state-danger/40;
+  }
+  .hz-label {
+    @apply block text-xs font-medium text-content-secondary mb-1.5;
+  }
+  .hz-hint  { @apply mt-1.5 text-xs text-content-muted; }
+  .hz-error { @apply mt-1.5 text-xs text-state-danger; }
+
+  /* ---- badge ----
+     Carries its own border colour: callers usually override it, but under v4
+     an unset border would fall through to currentColor. */
+  .hz-badge {
+    @apply inline-flex items-center gap-1.5 rounded-full
+           border border-edge px-2.5 py-0.5 text-2xs font-medium;
+  }
+
+  /* ---- the eyebrow / metadata label used throughout ---- */
+  .hz-label-mono {
+    @apply font-mono text-label uppercase text-content-muted;
+  }
+}
+
+/* ============================================================
+   UTILITIES
+
+   v4 uses @utility instead of @layer utilities, which is what gives these
+   variant support (hover:, dark:, sm: …).
+   ============================================================ */
+
+/* the portfolio's dotted canvas */
+@utility bg-dotted {
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--color-edge-strong) 45%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 18px 18px;
+  background-position: -9px -9px;
+}
+
+/* `container` is no longer a config object in v4 — it is a utility you own.
+   Centred, with the same responsive gutters the system documented on v3. */
+@utility container {
+  margin-inline: auto;
+  padding-inline: 1rem;
+  @variant sm { padding-inline: 1.5rem; }
+  @variant lg { padding-inline: 2rem; }
+}
+
+/* NOTE: .text-balance / .text-pretty were hand-defined here on v3 and are
+   core utilities — they were compiling twice. .hz-sr-only likewise duplicated
+   the built-in .sr-only. Both removed; use the built-ins. */

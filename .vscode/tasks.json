@@ -1,0 +1,57 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build CSS",
+      "type": "shell",
+      "command": "node tools/build-css.mjs",
+      "options": { "cwd": "${workspaceFolder}/tailwind" },
+      "problemMatcher": [],
+      "group": { "kind": "build", "isDefault": true },
+      "detail": "Compile tailwind/dist/haze.css and stamp index.html with a fresh cache-busting build id"
+    },
+    {
+      "label": "Rebuild palette",
+      "type": "shell",
+      "command": "python3 tools/build-palette.py",
+      "options": { "cwd": "${workspaceFolder}/tailwind" },
+      "problemMatcher": [],
+      "detail": "Re-solve the colour ramps; exits non-zero if any contrast assertion fails"
+    },
+    {
+      "label": "Check classes",
+      "type": "shell",
+      "command": "node tools/check-classes.mjs",
+      "options": { "cwd": "${workspaceFolder}/tailwind" },
+      "problemMatcher": [],
+      "detail": "Assert every class the stories render has a rule in dist/haze.css"
+    },
+    {
+      "label": "Verify (palette + build + classes + tests)",
+      "type": "shell",
+      "command": "npm run verify",
+      "options": { "cwd": "${workspaceFolder}/tailwind" },
+      "problemMatcher": [],
+      "group": { "kind": "test", "isDefault": true },
+      "detail": "Full check before committing"
+    },
+    {
+      "label": "Serve component explorer  (8788)",
+      "type": "shell",
+      "command": "python3 tools/serve.py 8788",
+      "options": { "cwd": "${workspaceFolder}/tailwind" },
+      "isBackground": true,
+      "problemMatcher": [],
+      "detail": "No-cache dev server -> http://localhost:8788/index.html"
+    },
+    {
+      "label": "Serve vanilla guide  (8766)",
+      "type": "shell",
+      "command": "python3 -m http.server 8766",
+      "options": { "cwd": "${workspaceFolder}" },
+      "isBackground": true,
+      "problemMatcher": [],
+      "detail": "Plain static server -> http://localhost:8766/index.html"
+    }
+  ]
+}

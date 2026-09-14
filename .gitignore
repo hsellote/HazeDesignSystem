@@ -1,0 +1,5 @@
+node_modules/
+.DS_Store
+
+# Generated — rebuild with `npm run build` in tailwind/
+tailwind/dist/

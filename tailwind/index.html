@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Haze Design System</title>
+<meta name="description" content="Component explorer for the Haze design system — Tailwind tokens, light and dark themes, WCAG-verified colour, and per-component tests." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" />
+<link rel="icon" type="image/png" href="assets/favicon.png" />
+<link rel="stylesheet" href="dist/haze.css?v=mu0yctge" />
+<script>
+  // set the theme before first paint so the shell never flashes the wrong one
+  try {
+    if (localStorage.getItem('hz-theme') === 'dark') document.documentElement.classList.add('dark');
+  } catch (e) {}
+</script>
+</head>
+<body class="overflow-hidden bg-bg text-content">
+
+<a href="#canvasHolder" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-accent focus:px-4 focus:py-2 focus:text-accent-fg">Skip to preview</a>
+
+<div class="grid h-screen grid-rows-[minmax(0,1fr)] grid-cols-1 overflow-hidden lg:grid-cols-[17rem_minmax(0,1fr)]">
+
+  <!-- ── sidebar ───────────────────────────────────────────── -->
+  <aside class="hidden flex-col border-r border-edge bg-surface-sunken lg:flex">
+    <div class="flex items-center gap-2.5 px-4 py-4">
+      <img src="assets/logo-128.png" alt="" width="32" height="32" class="h-8 w-8 rounded-lg object-cover" />
+      <div class="min-w-0">
+        <p class="truncate font-display text-[13px] font-semibold text-content">Haze Design System</p>
+        <p class="font-mono text-[10px] text-content-muted">Tailwind · v1.0</p>
+      </div>
+    </div>
+
+    <div class="px-3 pb-3">
+      <label for="search" class="sr-only">Search components</label>
+      <input id="search" type="search" placeholder="Search…  /"
+             class="w-full rounded-lg border border-edge bg-surface px-3 py-1.5 text-xs text-content placeholder:text-content-muted focus:border-accent-border focus:outline-none focus:ring-2 focus:ring-accent-border/40" />
+    </div>
+
+    <nav id="tree" aria-label="Components" class="flex-1 overflow-y-auto px-1 pb-4"></nav>
+
+    <div class="border-t border-edge p-3">
+      <a href="#/story/portfolio-original" class="flex items-center justify-between rounded-lg border border-edge px-3 py-2 text-xs text-content-secondary hover:border-edge-strong hover:text-content">
+        <span>Retired vanilla tokens</span><span class="font-mono">→</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ── main ──────────────────────────────────────────────── -->
+  <main class="flex min-h-0 min-w-0 flex-col overflow-hidden">
+
+    <!-- toolbar -->
+    <header class="flex flex-wrap items-center gap-3 border-b border-edge bg-surface px-4 py-3">
+      <div class="min-w-0">
+        <div class="flex items-center gap-2">
+          <span id="storyGroup" class="font-mono text-[10px] uppercase tracking-[0.12em] text-content-muted"></span>
+          <span class="text-content-muted">/</span>
+          <h1 id="storyTitle" class="font-display text-sm font-semibold text-content"></h1>
+        </div>
+      </div>
+
+      <div class="ml-auto flex flex-wrap items-center gap-2">
+        <label for="vpSelect" class="sr-only">Preview viewport</label>
+        <select id="vpSelect" class="rounded-lg border border-edge bg-surface px-2.5 py-1.5 text-xs text-content">
+          <option value="responsive">Responsive</option>
+          <option value="mobile">Mobile · 375</option>
+          <option value="tablet">Tablet · 768</option>
+          <option value="desktop">Desktop · 1280</option>
+        </select>
+        <span id="vpLabel" class="sr-only"></span>
+
+        <button id="themeToggle" type="button"
+                class="flex items-center gap-2 rounded-lg border border-edge bg-surface px-3 py-1.5 text-xs text-content hover:border-edge-strong">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M13 9.5A5.5 5.5 0 0 1 6.5 3a5.5 5.5 0 1 0 6.5 6.5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+          </svg>
+          Theme: <span id="themeLabel">Light</span>
+        </button>
+      </div>
+    </header>
+
+    <p id="storySummary" class="border-b border-edge bg-surface px-4 pb-3 text-xs leading-relaxed text-content-secondary"></p>
+
+    <!-- canvas + details, side by side on wide screens so the preview and the
+         controls are visible at once instead of stacked behind a scroll -->
+    <div class="grid min-h-0 flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[minmax(0,1fr)_26rem] 2xl:grid-cols-[minmax(0,1fr)_32rem]">
+
+      <!-- canvas -->
+      <div class="flex min-h-0 min-w-0 justify-center overflow-auto bg-surface-sunken bg-dotted p-4">
+        <div id="canvasHolder" class="h-full w-full overflow-hidden rounded-xl border border-edge bg-bg shadow-sm transition-[max-width] duration-[280ms]"></div>
+      </div>
+
+      <!-- details: its own scroll context, so the canvas never moves -->
+      <section id="panel" class="@container flex min-h-0 min-w-0 flex-col overflow-hidden border-t border-edge bg-surface lg:border-t-0 lg:border-l"></section>
+    </div>
+  </main>
+</div>
+
+<!-- This explorer is an ES-module app, so it cannot run from file:// —
+     browsers block module loading on that origin and the page would sit blank
+     with only a CORS line in the console. Say so plainly instead. -->
+<script>
+  if (location.protocol === 'file:') {
+    document.documentElement.innerHTML =
+      '<head><title>Haze Design System \u2014 needs a server</title></head><body style="margin:0;font:15px/1.6 system-ui,sans-serif;background:#fbfcfb;color:#2b2f28">' +
+      '<div style="max-width:34rem;margin:14vh auto;padding:0 1.5rem">' +
+      '<p style="font:500 11px/1 ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;color:#71766d">Haze Design System</p>' +
+      '<h1 style="font-size:1.6rem;margin:.5rem 0 0;letter-spacing:-.02em">This page needs a local server</h1>' +
+      '<p style="color:#555a50">You opened it from <code style="font:13px ui-monospace,monospace">file://</code>. The explorer loads its components as ES modules, and browsers block those on <code style="font:13px ui-monospace,monospace">file://</code>, so nothing can render.</p>' +
+      '<p style="color:#555a50;margin-bottom:.4rem">Run this from the <code style="font:13px ui-monospace,monospace">tailwind</code> folder:</p>' +
+      '<pre style="background:#2b2f28;color:#e7e9e6;padding:.9rem 1rem;border-radius:11px;overflow-x:auto;font:13px ui-monospace,monospace">npm run serve</pre>' +
+      '<p style="color:#555a50">then open <a href="http://localhost:8788/index.html" style="color:#557f43">http://localhost:8788/index.html</a></p>' +
+      '<p style="color:#71766d;font-size:13px;border-top:1px solid #e7e9e6;padding-top:1rem;margin-top:1.5rem">' +
+      'Do not use VS Code Live Server for this \u2014 if it is already running for another folder it will serve <em>that</em> folder instead.</p>' +
+      '</div></body>';
+  }
+</script>
+<script type="module" src="app/app.js?v=mu0yctge"></script>
+</body>
+</html>

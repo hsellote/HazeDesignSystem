@@ -1,0 +1,34 @@
+{
+  // Tailwind v4 is CSS-first: there is no tailwind.config.js for the extension
+  // to find. Without this mapping, IntelliSense silently offers no class
+  // completions at all inside tailwind/.
+  "tailwindCSS.experimental.configFile": {
+    "tailwind/src/input.css": "tailwind/**"
+  },
+  "tailwindCSS.includeLanguages": {
+    "html": "html",
+    "javascript": "javascript"
+  },
+  // Stories build markup inside template literals, so classes live in strings.
+  "tailwindCSS.experimental.classRegex": [
+    ["class=\"([^\"]*)\"", "([a-zA-Z0-9\\-:\\[\\]/.@]+)"]
+  ],
+
+  // @theme, @utility, @custom-variant and @apply are valid v4 at-rules. The
+  // built-in CSS linter does not know them and would underline every one.
+  // Note: NOT remapping *.css to the tailwindcss language — the vanilla system
+  // at the root is plain CSS and should stay that way.
+  "css.lint.unknownAtRules": "ignore",
+
+  "search.exclude": {
+    "**/node_modules": true,
+    "tailwind/dist": true
+  },
+  "files.watcherExclude": {
+    "**/node_modules/**": true
+  },
+
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "liveServer.settings.port": 5501
+}

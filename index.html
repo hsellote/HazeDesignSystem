@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Haze Design System</title>
+<meta name="description" content="Haze Design System — the Tailwind component explorer and the vanilla CSS style guide." />
+<link rel="icon" type="image/png" href="assets/favicon.png" />
+
+<!-- The front door. The system lives in `tailwind/`, so this forwards there
+     rather than duplicating its shell: `tailwind/app/app.js` resolves
+     `dist/haze.css` and `assets/*` against the *document*, so a copy of that
+     markup living here would render every preview unstyled. The explorer shell
+     is also a build artefact — `tools/build-css.mjs` stamps
+     `tailwind/index.html` with a fresh `?v=` on every build — and a second
+     copy would go stale the moment anyone ran it.
+
+     location.replace, not a meta refresh, so this page never lands in history
+     and the back button still works. The card below is the no-JS path. -->
+<script>location.replace('tailwind/index.html' + location.hash);</script>
+<noscript><meta http-equiv="refresh" content="0; url=tailwind/index.html" /></noscript>
+
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 1.5rem;
+    background: #FCFDFB;
+    color: #1B2415;
+    font: 15px/1.6 'Poppins', system-ui, -apple-system, sans-serif;
+  }
+  .card { max-width: 30rem; }
+  .eyebrow {
+    font: 500 11px/1 'JetBrains Mono', ui-monospace, monospace;
+    letter-spacing: .12em; text-transform: uppercase; color: #64705C;
+  }
+  h1 { font-size: 1.5rem; letter-spacing: -.02em; margin: .6rem 0 .4rem; }
+  p { color: #3F4A3A; margin: 0 0 1.25rem; }
+  .links { display: flex; flex-direction: column; gap: .6rem; }
+  a {
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    padding: .8rem 1rem;
+    border: 1px solid #DCE8D2; border-radius: 11px;
+    color: #1B2415; text-decoration: none;
+  }
+  a:hover { border-color: #4E7A34; }
+  a b { font-weight: 500; }
+  a span { font: 11px 'JetBrains Mono', ui-monospace, monospace; color: #64705C; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #141A11; color: #E9F0E3; }
+    p { color: #C3D1BB; }
+    .eyebrow, a span { color: #A3B399; }
+    a { border-color: #35422D; color: #E9F0E3; }
+    a:hover { border-color: #B6D79B; }
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Haze Design System</p>
+  <h1>Component explorer</h1>
+  <p>You should have been sent straight there. If you are still here:</p>
+
+  <div class="links">
+    <a href="tailwind/index.html"><b>Open the explorer</b><span>tailwind/ &rarr;</span></a>
+    <a href="tailwind/index.html#/story/portfolio-original"><b>Retired vanilla tokens</b><span>reference &rarr;</span></a>
+  </div>
+</div>
+
+</body>
+</html>
