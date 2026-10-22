@@ -294,7 +294,9 @@ const myThing = {
 };
 ```
 
-Then add it to the `STORIES` array. It appears in the sidebar, gets the five baseline checks for free, and its Code tab generates HTML / Vue / React automatically. Run `npm run check:classes` afterwards.
+Then add it to the `STORIES` array.
+
+**Behaviour.** A story that needs real interaction adds `setup(root, { args, update })`. The canvas calls it after every render and runs the function it returns before the next one, so listeners on the canvas document never pile up. `update(nextArgs, focusSelector)` writes args back through the same path as the Controls tab and puts focus where it belongs once the new markup is in, so the canvas, Controls and Code tabs never disagree. Tabs, Slide-over Panel and Command Palette use it for their keyboard behaviour, and the **Color Generator** (Foundations, `app/color-generator.js`) mounts through it. It appears in the sidebar, gets the five baseline checks for free, and its Code tab generates HTML / Vue / React automatically. Run `npm run check:classes` afterwards.
 
 ## The vanilla CSS system
 

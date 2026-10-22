@@ -11,6 +11,9 @@
 
 import { expect, AssertionError, BASE_CHECKS, textContrast, accessibleName, focusableWithin } from './testkit.js';
 
+// Carry this module's ?v= build stamp onto the import, as app.js does for us.
+const colourGen = await import('./color-generator.js' + new URL(import.meta.url).search);
+
 /* ---------- shared arg types ---------- */
 const sel = (options, def) => ({ type: 'select', options, default: def });
 const bool = (def = false) => ({ type: 'boolean', default: def });
@@ -1710,6 +1713,21 @@ const tabs = {
   </div>`).join('\n  ')}
 </div>`;
   },
+  // Selection follows focus: arrows move and select in one step, and the
+  // choice goes back through `active` so the Controls tab stays in step.
+  setup(root, { update }) {
+    const tabsEls = [...root.querySelectorAll('[role="tab"]')];
+    tabsEls.forEach((t, i) => {
+      t.addEventListener('click', () => update({ active: String(i) }, `#tab-${i}`));
+      t.addEventListener('keydown', (e) => {
+        const n = tabsEls.length;
+        const next = { ArrowRight: (i + 1) % n, ArrowLeft: (i - 1 + n) % n, Home: 0, End: n - 1 }[e.key];
+        if (next === undefined) return;
+        e.preventDefault();
+        update({ active: String(next) }, `#tab-${next}`);
+      });
+    });
+  },
   api: [
     ['role="tablist" / "tab" / "tabpanel"', 'ARIA', '—', 'The full pattern; none of the three is optional.'],
     ['tabindex', '0 | -1', '—', 'Roving: only the selected tab is in the tab order.'],
@@ -1862,6 +1880,27 @@ const panel = {
   </div>
 </div>`;
   },
+  setup(root, { args, update }) {
+    if (!args.open) {
+      root.querySelector('[aria-haspopup="dialog"]')
+        .addEventListener('click', () => update({ open: true }, '[aria-label="Close case study"]'));
+      return;
+    }
+    const dialog = root.querySelector('[role="dialog"]');
+    // closing returns focus to the trigger, which is what the closed state renders
+    const close = () => update({ open: false }, '[aria-haspopup="dialog"]');
+    dialog.querySelector('[aria-label="Close case study"]').addEventListener('click', close);
+    root.querySelector('.bg-surface-inverse\\/30').addEventListener('click', close);
+    dialog.querySelector('a[href]').addEventListener('click', (e) => e.preventDefault());
+    dialog.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { e.preventDefault(); close(); return; }
+      if (e.key !== 'Tab') return;
+      const f = focusableWithin(dialog), first = f[0], last = f[f.length - 1];
+      const active = dialog.ownerDocument.activeElement;
+      if (e.shiftKey && active === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && active === last) { e.preventDefault(); first.focus(); }
+    });
+  },
   api: [
     ['open', 'boolean', 'true', 'Toggle to see the trigger state.'],
     ['width', 'sm | md | lg', 'md', '384 / 448 / 512px.'],
@@ -1959,7 +1998,67 @@ const palette = {
     <span class="hz-label-mono">↵ Open</span>
     <span class="hz-label-mono">Esc Close</span>
   </div>
+</div>
+<div data-doc class="mx-auto mt-3 flex w-full max-w-lg items-center gap-3">
+  <button type="button" class="hz-btn hz-btn-secondary hz-btn-s" data-palette-open hidden>Search <span class="font-mono text-2xs text-content-muted">⌘K</span></button>
+  <p role="status" class="font-mono text-xs text-content-muted" data-palette-status></p>
 </div>`;
+  },
+  // Focus never leaves the input: arrows move aria-activedescendant, the
+  // highlight follows it, and typing filters the list in place.
+  setup(root) {
+    const doc = root.ownerDocument;
+    const box = root.firstElementChild;
+    const input = root.querySelector('[role="combobox"]');
+    const opts = [...root.querySelectorAll('[role="option"]')];
+    const opener = root.querySelector('[data-palette-open]');
+    const status = root.querySelector('[data-palette-status]');
+    const enterHint = opts.find((o) => o.children.length === 3)?.lastElementChild;
+    const label = (o) => o.children[1].textContent;
+    const shown = () => opts.filter((o) => !o.hidden);
+    const current = () => shown().find((o) => o.getAttribute('aria-selected') === 'true');
+    const highlight = (o) => {
+      opts.forEach((x) => {
+        x.setAttribute('aria-selected', String(x === o));
+        x.classList.toggle('bg-accent-subtle', x === o);
+      });
+      if (!o) return input.removeAttribute('aria-activedescendant');
+      if (enterHint) o.appendChild(enterHint);
+      input.setAttribute('aria-activedescendant', o.id);
+    };
+    const filter = () => {
+      const q = input.value.trim().toLowerCase();
+      opts.forEach((o) => { o.hidden = !!q && !label(o).toLowerCase().includes(q); });
+      const v = shown();
+      if (!current()) highlight(v[0] || null);
+      status.textContent = v.length ? '' : `No results for “${input.value.trim()}”.`;
+    };
+    const choose = (o) => { if (o) status.textContent = `Opened ${label(o)}.`; };
+    const open = () => { box.hidden = false; opener.hidden = true; input.focus(); };
+    const close = () => { box.hidden = true; status.textContent = ''; opener.hidden = false; opener.focus(); };
+
+    input.addEventListener('input', filter);
+    input.addEventListener('keydown', (e) => {
+      const v = shown(), i = v.indexOf(current());
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (v.length) highlight(v[(i + (e.key === 'ArrowDown' ? 1 : -1) + v.length) % v.length]);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        choose(current());
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        close();
+      }
+    });
+    opts.forEach((o) => o.addEventListener('click', () => { highlight(o); choose(o); input.focus(); }));
+    opener.addEventListener('click', open);
+    const shortcut = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); open(); }
+    };
+    doc.addEventListener('keydown', shortcut);
+    if (input.value) filter();
+    return () => doc.removeEventListener('keydown', shortcut);
   },
   api: [
     ['role="combobox"', 'ARIA', '—', 'On the input, with aria-expanded and aria-controls.'],
@@ -3330,8 +3429,67 @@ const findings = {
 
 /* ---------- registry ---------- */
 
+const colorGenerator = {
+  id: 'color-generator',
+  title: 'Color Generator',
+  group: 'Foundations',
+  summary:
+    'Build a shade ramp from any colour and export it as CSS, Tailwind or tokens. The default algorithm is ' +
+    'the one tools/build-palette.py uses, so a new ramp gets the same contrast guarantees as the shipped ones.',
+  render: () => colourGen.markup(),
+  setup: (root) => colourGen.mount(root),
+  api: [
+    ['base colour', 'hex | rgb() | hsl() | oklch()', '#759D66', 'Type, paste anywhere on the page, pick, or drag the sliders. Space picks a random one.'],
+    ['algorithm', 'haze | tailwind | radix | ant | lightness | saturation | hueshift | mono | analogous | complementary', 'haze', 'How the ramp is built. Only haze is solved for contrast; the -style options approximate how those libraries shape a scale.'],
+    ['contrast shift', '-1 … 1', '0', 'Positive spreads light and dark steps apart; negative pulls them toward the middle.'],
+    ['naming pattern', '50…950 | 100…1000 | 1…12 | 10…100 | 0…100 | a…z', '50…950', 'Step names in the tiles and every export.'],
+    ['shade count', '3 … 20', '11', 'Number of steps, light to dark.'],
+    ['export', 'CSS | Tailwind 3 | Tailwind 4 | Tokens | JSON', 'CSS', 'In HEX, RGB, HSL or OKLCH. Copy SVG pastes the ramp into Figma as layers.'],
+  ],
+  notes: [
+    'To add a generated ramp to Haze for real, put its hue and peak chroma in FAMILIES in tools/build-palette.py and run npm run palette, so the contrast assertions cover it in CI. The generator is for exploring; the solver is the source of truth.',
+    'Tile text is black or white, whichever reads better on that shade; one of the two always clears 4.5:1.',
+  ],
+  tests: {
+    checklist: [
+      'Paste a hex value with focus outside any field — the base colour and the ramp update.',
+      'Press Space — a new random colour; with a button focused, Space presses the button instead.',
+      'Arrow through the export tabs — the code follows the selected format.',
+      'Click a shade — a toast confirms what was copied.',
+      'Switch the canvas to dark — controls and export stay legible; the shades themselves do not change.',
+    ],
+    checks: [
+      {
+        name: 'The Haze algorithm meets its contrast targets',
+        wcag: '1.4.3 / 1.4.11 Contrast',
+        fn() {
+          const { ALGORITHMS, hexToRgb, contrast } = colourGen;
+          const white = [1, 1, 1];
+          for (const hex of ['#759d66', '#2e79b2', '#be524a', '#9e6a00']) {
+            const { rgbs } = ALGORITHMS.haze.run(11, hexToRgb(hex), 0);
+            expect(contrast(rgbs[5], white) >= 3, `${hex} step 500 ≥ 3:1`).toBeTruthy();
+            expect(contrast(rgbs[6], white) >= 4.5, `${hex} step 600 ≥ 4.5:1`).toBeTruthy();
+            expect(contrast(rgbs[7], white) >= 7, `${hex} step 700 ≥ 7:1`).toBeTruthy();
+          }
+          return '500 / 600 / 700 hold 3 / 4.5 / 7:1 across four hues';
+        },
+      },
+      {
+        name: 'Every shade is named with its contrast',
+        wcag: '1.1.1 Non-text Content',
+        fn(root) {
+          const tiles = [...root.querySelectorAll('[role="listitem"]')];
+          expect(tiles.length, 'shades').toBeGreaterThanOrEqual(3);
+          for (const t of tiles) expect(t.getAttribute('aria-label'), 'tile label').toContain('to 1 on white');
+          return `${tiles.length} shades labelled`;
+        },
+      },
+    ],
+  },
+};
+
 export const STORIES = [
-  colors, typography, spacing, radius, brand,
+  colors, typography, spacing, radius, brand, colorGenerator,
   button, link, badge, statusDot, card, stat,
   input, choice, searchField, navItem, alert, alertTones, meter, table, tabs,
   caseCard, postCard, timeline, detailList, filterGroup, linkRow,

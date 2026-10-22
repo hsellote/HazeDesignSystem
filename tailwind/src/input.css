@@ -288,6 +288,43 @@
            border border-edge px-2.5 py-0.5 text-2xs font-medium;
   }
 
+  /* ---- range slider ----
+     The input itself is 24px tall so the thumb meets the 2.5.8 target size;
+     the visible 10px track is drawn by the pseudo-elements. A caller can paint
+     the track (a gradient through the values it sweeps) via --hz-range-track. */
+  .hz-range {
+    @apply h-6 w-full cursor-pointer appearance-none bg-transparent;
+  }
+  .hz-range::-webkit-slider-runnable-track {
+    height: 10px;
+    border-radius: 9999px;
+    border: 1px solid var(--color-edge);
+    background: var(--hz-range-track, var(--color-surface-sunken));
+  }
+  .hz-range::-moz-range-track {
+    height: 10px;
+    border-radius: 9999px;
+    border: 1px solid var(--color-edge);
+    background: var(--hz-range-track, var(--color-surface-sunken));
+  }
+  .hz-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    margin-top: -5px;
+    width: 18px;
+    height: 18px;
+    border-radius: 9999px;
+    border: 2px solid var(--color-content);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+  }
+  .hz-range::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 9999px;
+    border: 2px solid var(--color-content);
+    background: var(--color-surface);
+  }
+
   /* ---- the eyebrow / metadata label used throughout ---- */
   .hz-label-mono {
     @apply font-mono text-label uppercase text-content-muted;

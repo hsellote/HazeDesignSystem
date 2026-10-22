@@ -161,13 +161,39 @@ function buildFrame() {
   return frame;
 }
 
+/* A story may export `setup(root, ctx)` to wire behaviour onto its markup —
+   keyboard handling, open/close. It returns an optional cleanup, run before the
+   next paint so listeners on the canvas document never pile up. `ctx.update`
+   writes args back through the same path as the Controls tab, so the panel and
+   the Code tab stay in step with what the canvas shows; `focus` names the
+   element that should hold focus once the new markup is in. */
+let teardown = null;
+let pendingFocus = null;
+
 function paintCanvas() {
   const root = canvasRoot();
   const story = storyById(state.storyId);
   if (!root || !story) return;
+  if (typeof teardown === 'function') teardown();
+  teardown = null;
   root.innerHTML = story.render(state.args);
   // keep the iframe theme in step with the toolbar
   canvasDoc().documentElement.classList.toggle('dark', state.theme === 'dark');
+  if (story.setup) {
+    teardown = story.setup(root, {
+      args: state.args,
+      update(next, focus) {
+        Object.assign(state.args, next);
+        state.results = null;
+        pendingFocus = focus || null;
+        render();
+      },
+    });
+  }
+  if (pendingFocus) {
+    root.querySelector(pendingFocus)?.focus();
+    pendingFocus = null;
+  }
 }
 
 /* ============================================================
