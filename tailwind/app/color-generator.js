@@ -156,7 +156,7 @@ export function nearestName(rgb) {
   }
   return best;
 }
-const slug = (s) => s.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'colour';
+const slug = (s) => s.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'color';
 
 /* ---------- algorithms: each returns { rgbs, anchor } for n steps, light to dark ---------- */
 
@@ -189,7 +189,7 @@ const TWELVE_L = [0.993, 0.981, 0.956, 0.931, 0.904, 0.868, 0.817, 0.75, 0.63, 0
 const TWELVE_C = [0.05, 0.1, 0.22, 0.32, 0.42, 0.52, 0.64, 0.82, 1, 1, 0.92, 0.5];
 
 /* Place the base at the step whose lightness it matches, keep it exact, and bend
-   the neighbouring steps toward it. */
+   the neighboring steps toward it. */
 function anchored(n, base, Ls, Cs, s, hueAt) {
   const [bL, bC, bh] = rgbToOklch(base);
   const ts = steps(n);
@@ -208,7 +208,7 @@ function anchored(n, base, Ls, Cs, s, hueAt) {
 export const ALGORITHMS = {
   haze: {
     label: 'Haze · contrast-solved',
-    hint: 'Every step is solved to a target contrast against white, so 500 is always a 3:1 border colour, 600 AA text and 700 AAA text. The same method builds the Haze palette.',
+    hint: 'Every step is solved to a target contrast against white, so 500 is always a 3:1 border color, 600 AA text and 700 AAA text. The same method builds the Haze palette.',
     run(n, base, s) {
       const [, bC, bh] = rgbToOklch(base);
       const peak = Math.max(0.015, bC * 1.1);
@@ -219,17 +219,17 @@ export const ALGORITHMS = {
   },
   tailwind: {
     label: 'Tailwind-style',
-    hint: 'An OKLCH lightness curve with chroma peaking mid-ramp. Your colour is kept exactly at the step whose lightness it matches.',
+    hint: 'An OKLCH lightness curve with chroma peaking mid-ramp. Your color is kept exactly at the step whose lightness it matches.',
     run: (n, b, s) => anchored(n, b, CURVE_L, CURVE_C, s),
   },
   radix: {
     label: 'Radix-style',
-    hint: 'Twelve-step logic: soft backgrounds, then component fills and borders, your colour as the solid step, then two text steps.',
+    hint: 'Twelve-step logic: soft backgrounds, then component fills and borders, your color as the solid step, then two text steps.',
     run: (n, b, s) => anchored(n, b, TWELVE_L, TWELVE_C, s),
   },
   ant: {
     label: 'Ant-style',
-    hint: 'HSV steps around your colour: lighter steps lose saturation and drift warm, darker steps gain saturation and drift cool.',
+    hint: 'HSV steps around your color: lighter steps lose saturation and drift warm, darker steps gain saturation and drift cool.',
     run(n, base, s) {
       const [h, sv, v] = rgbToHsv(base);
       const anchor = Math.round((n - 1) * 0.5);
@@ -255,7 +255,7 @@ export const ALGORITHMS = {
   },
   saturation: {
     label: 'Saturation scale',
-    hint: 'Holds hue and lightness, and steps saturation from grey to full colour.',
+    hint: 'Holds hue and lightness, and steps saturation from gray to full color.',
     run(n, base, s) {
       const [h, sat, l] = rgbToHsl(base);
       const Ss = steps(n).map((t) => clamp(t ** (1 - s * 0.5)));
@@ -269,7 +269,7 @@ export const ALGORITHMS = {
   },
   mono: {
     label: 'Monochromatic',
-    hint: 'Mixes your colour toward white for tints and toward a deep ink for shades, in OKLab so the steps feel even.',
+    hint: 'Mixes your color toward white for tints and toward a deep ink for shades, in OKLab so the steps feel even.',
     run(n, base, s) {
       const lab = rgbToOklab(base), white = rgbToOklab(WHITE), ink = rgbToOklab(hexToRgb('#0b0d0a'));
       const anchor = Math.round((n - 1) / 2);
@@ -286,7 +286,7 @@ export const ALGORITHMS = {
   },
   analogous: {
     label: 'Analogous',
-    hint: 'Neighbouring hues, 60° either side of your colour, at its lightness and chroma.',
+    hint: 'Neighboring hues, 60° either side of your color, at its lightness and chroma.',
     run(n, base, s) {
       const [L, C, h] = rgbToOklch(base), anchor = Math.round((n - 1) / 2);
       const rgbs = steps(n).map((t, i) => (i === anchor ? base : oklchToRgb(shiftL(L, s * (t - 0.5)), C, h - 60 + 120 * t)));
@@ -295,7 +295,7 @@ export const ALGORITHMS = {
   },
   complementary: {
     label: 'Complementary',
-    hint: 'Blends from your colour to its opposite hue through OKLab, passing a neutral midpoint.',
+    hint: 'Blends from your color to its opposite hue through OKLab, passing a neutral midpoint.',
     run(n, base, s) {
       const [L, C, h] = rgbToOklch(base);
       const a = rgbToOklab(base), b = rgbToOklab(oklchToRgb(shiftL(L, s), C, h + 180));
@@ -382,7 +382,7 @@ export function markup() {
   <div class="grid grid-cols-1 rounded-2xl border border-edge bg-surface @3xl:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)_minmax(0,1fr)]">
     <section class="${section}" aria-labelledby="cg-base-label">
       <div class="flex items-center justify-between gap-2">
-        <p id="cg-base-label" class="${eyebrow}">Base colour</p>
+        <p id="cg-base-label" class="${eyebrow}">Base color</p>
         <div class="inline-flex gap-0.5 rounded-lg border border-edge-strong bg-surface-sunken p-0.5" role="group" aria-label="Slider model">
           <button type="button" class="${segBtn}" data-model="rgb" aria-pressed="true">RGB</button>
           <button type="button" class="${segBtn}" data-model="hsl" aria-pressed="false">HSL</button>
@@ -391,7 +391,7 @@ export function markup() {
       </div>
       <div class="flex items-center gap-2.5">
         <label class="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-edge-strong" data-cg="chip">
-          <input type="color" data-cg="picker" aria-label="Colour picker" class="absolute -inset-2 h-14 w-14 cursor-pointer opacity-0" />
+          <input type="color" data-cg="picker" aria-label="Color picker" class="absolute -inset-2 h-14 w-14 cursor-pointer opacity-0" />
         </label>
         <label for="cg-hex" class="sr-only">Hex, RGB, HSL or OKLCH value</label>
         <input id="cg-hex" type="text" spellcheck="false" autocomplete="off" aria-describedby="cg-hex-msg"
@@ -419,7 +419,7 @@ export function markup() {
         <output class="min-w-[2ch] text-center font-mono text-2xl font-semibold text-content" aria-live="polite" data-cg="count">11</output>
         <button type="button" class="hz-btn hz-btn-secondary hz-btn-s w-[34px] rounded-full px-0 text-lg" data-cg="plus" aria-label="More shades">+</button>
       </div>
-      <button type="button" class="hz-btn hz-btn-primary hz-btn-s" data-cg="random">Random colour <kbd class="rounded-xs border border-current px-1 font-mono text-2xs">Space</kbd></button>
+      <button type="button" class="hz-btn hz-btn-primary hz-btn-s" data-cg="random">Random color <kbd class="rounded-xs border border-current px-1 font-mono text-2xs">Space</kbd></button>
     </section>
   </div>
 
@@ -448,7 +448,7 @@ export function markup() {
         <button type="button" role="tab" data-format="tokens" aria-selected="false" tabindex="-1" class="rounded-md px-3 py-1.5 text-sm font-medium text-content-muted aria-selected:bg-surface aria-selected:text-accent aria-selected:shadow-xs">Tokens</button>
         <button type="button" role="tab" data-format="json" aria-selected="false" tabindex="-1" class="rounded-md px-3 py-1.5 text-sm font-medium text-content-muted aria-selected:bg-surface aria-selected:text-accent aria-selected:shadow-xs">JSON</button>
       </div>
-      <div class="inline-flex gap-0.5 rounded-lg border border-edge-strong bg-surface-sunken p-0.5" role="group" aria-label="Colour notation">
+      <div class="inline-flex gap-0.5 rounded-lg border border-edge-strong bg-surface-sunken p-0.5" role="group" aria-label="Color notation">
         <button type="button" class="${segBtn}" data-notation="hex" aria-pressed="true">HEX</button>
         <button type="button" class="${segBtn}" data-notation="rgb" aria-pressed="false">RGB</button>
         <button type="button" class="${segBtn}" data-notation="hsl" aria-pressed="false">HSL</button>
@@ -462,7 +462,7 @@ export function markup() {
     </div>
   </section>
 
-  <p class="text-xs text-content-muted">Press <kbd class="rounded-xs border border-edge-strong px-1 font-mono text-2xs text-content">Space</kbd> for a random colour, or paste a hex, rgb(), hsl() or oklch() value anywhere on the page.</p>
+  <p class="text-xs text-content-muted">Press <kbd class="rounded-xs border border-edge-strong px-1 font-mono text-2xs text-content">Space</kbd> for a random color, or paste a hex, rgb(), hsl() or oklch() value anywhere on the page.</p>
   <p role="status" class="fixed bottom-5 left-1/2 -translate-x-1/2 rounded-lg bg-surface-inverse px-3.5 py-2 text-xs font-medium text-content-inverse shadow-lg" data-cg="toast" hidden></p>
 </div>`;
 }
@@ -555,7 +555,7 @@ export function mount(root) {
       const base = i === anchor;
       return `<button type="button" role="listitem" data-i="${i}" style="background:${hex};color:${inkFor(rgb)}"
         class="relative grid min-h-28 content-between rounded-lg border border-edge p-2.5 text-left transition-transform duration-150 hover:-translate-y-0.5"
-        aria-label="${names[i]} ${hex.toUpperCase()}, ${cw.toFixed(2)} to 1 on white${base ? ', your base colour' : ''}. Copy">
+        aria-label="${names[i]} ${hex.toUpperCase()}, ${cw.toFixed(2)} to 1 on white${base ? ', your base color' : ''}. Copy">
         <span class="font-mono text-sm font-semibold">${names[i]}</span>
         ${base ? '<span class="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-current" aria-hidden="true"></span>' : ''}
         <span class="grid gap-1 font-mono text-2xs">
