@@ -378,7 +378,7 @@ const section = 'grid min-w-0 content-start gap-3.5 border-t border-edge p-5 fir
 
 export function markup() {
   const opts = (o) => Object.entries(o).map(([k, v]) => `<option value="${k}">${typeof v === 'string' ? v : v.label}</option>`).join('');
-  return `<div class="@container grid gap-6" data-colour-generator>
+  return `<div class="@container grid grid-cols-1 gap-6" data-colour-generator>
   <div class="grid grid-cols-1 rounded-2xl border border-edge bg-surface @3xl:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)_minmax(0,1fr)]">
     <section class="${section}" aria-labelledby="cg-base-label">
       <div class="flex items-center justify-between gap-2">
@@ -436,7 +436,8 @@ export function markup() {
         <button type="button" class="hz-btn hz-btn-secondary hz-btn-s" data-cg="copy-list">Copy hex list</button>
       </div>
     </div>
-    <div role="list" aria-label="Shades" class="mt-3 grid grid-cols-[repeat(auto-fill,minmax(112px,1fr))] gap-2.5" data-cg="grid"></div>
+    <!-- one row, every shade side by side; scrolls sideways only when there is no room left -->
+    <div role="list" aria-label="Shades" class="mt-2.5 grid grid-flow-col auto-cols-[minmax(54px,1fr)] gap-1 overflow-x-auto pb-1 pt-0.5" data-cg="grid"></div>
   </section>
 
   <section aria-label="Export" class="overflow-hidden rounded-2xl border border-edge bg-surface">
@@ -554,13 +555,13 @@ export function mount(root) {
       const grade = cw >= 7 ? 'AAA' : cw >= 4.5 ? 'AA' : cw >= 3 ? 'UI' : '';
       const base = i === anchor;
       return `<button type="button" role="listitem" data-i="${i}" style="background:${hex};color:${inkFor(rgb)}"
-        class="relative grid min-h-28 content-between rounded-lg border border-edge p-2.5 text-left transition-transform duration-150 hover:-translate-y-0.5"
+        class="relative grid min-h-28 content-between rounded-lg border border-edge p-1.5 text-left transition-transform duration-150 hover:-translate-y-0.5"
         aria-label="${names[i]} ${hex.toUpperCase()}, ${cw.toFixed(2)} to 1 on white${base ? ', your base color' : ''}. Copy">
-        <span class="font-mono text-sm font-semibold">${names[i]}</span>
-        ${base ? '<span class="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-current" aria-hidden="true"></span>' : ''}
-        <span class="grid gap-1 font-mono text-2xs">
-          <span class="uppercase">${formatColour(rgb, state.notation)}</span>
-          <span class="flex flex-wrap gap-1"><span class="rounded-xs border border-current px-1">${cw.toFixed(2)}</span>${grade ? `<span class="rounded-xs border border-current px-1">${grade}</span>` : ''}</span>
+        <span class="font-mono text-xs font-semibold">${names[i]}</span>
+        ${base ? '<span class="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true"></span>' : ''}
+        <span class="grid gap-1 font-mono text-[10px] leading-tight">
+          <span class="${state.notation === 'hex' ? 'whitespace-nowrap tracking-tight' : 'break-all'} uppercase">${formatColour(rgb, state.notation)}</span>
+          <span class="flex flex-col items-start gap-0.5"><span class="rounded-xs border border-current px-1">${cw.toFixed(2)}</span>${grade ? `<span class="rounded-xs border border-current px-1">${grade}</span>` : ''}</span>
         </span>
       </button>`;
     }).join('');
